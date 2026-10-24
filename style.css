@@ -1,0 +1,47 @@
+:root{
+  --magenta:#DE3F8C;
+  --magenta-deep:#B82A70;
+  --indigo:#3A2EA3;
+  --wash:#FCEEF6;
+  --ink:#211B3E;
+  --muted:#675F86;
+  --line:#EAD9E6;
+  --paper:#FFFFFF;
+  --ok:#1D7A53;
+  --err:#B3261E;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--ink);background:var(--paper);
+  -webkit-font-smoothing:antialiased;line-height:1.45;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+img{max-width:100%;display:block}
+.hidden{display:none !important}
+
+/* stickers */
+.sticker{
+  width:44px;height:44px;border-radius:50%;
+  display:grid;place-items:center;
+  font-weight:800;font-size:18px;color:#fff;
+  box-shadow:0 2px 0 rgba(0,0,0,.18), inset 0 0 0 3px rgba(255,255,255,.55);
+  flex:none;
+}
+.sticker.s1{background:var(--magenta)}
+.sticker.s2{background:var(--indigo)}
+.sticker.empty{background:transparent;box-shadow:none;border:2px dashed #CDB9CB;color:#CDB9CB}
+
+.btn{
+  border:0;border-radius:999px;padding:14px 22px;font-weight:700;
+  background:var(--indigo);color:#fff;min-height:48px;
+}
+.btn:disabled{background:#CFC9E3;color:#fff;cursor:not-allowed}
+.btn.secondary{background:var(--wash);color:var(--ink)}
+.btn.magenta{background:var(--magenta)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}

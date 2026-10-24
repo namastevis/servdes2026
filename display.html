@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poster exhibition – ServDes India Symposium 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+html,body{height:100%;overflow:hidden}
+.wrap{height:100vh;display:grid;grid-template-rows:100vh;grid-template-columns:minmax(0,1fr) minmax(300px,34vw);background:var(--wash)}
+.stage{position:relative;min-height:0;display:flex;align-items:center;justify-content:center;padding:2.5vh 2vw}
+.stage img{max-height:95vh;max-width:100%;box-shadow:0 12px 40px rgba(33,27,62,.18);border-radius:4px;background:#fff;transition:opacity .5s}
+.stage img.fade{opacity:0}
+.side{background:#fff;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:4vh 2.6vw;border-left:1px solid var(--line)}
+.side .logo{width:min(170px,50%)}
+.side h1{font-size:clamp(24px,2.5vw,44px);line-height:1.04;letter-spacing:-.02em;margin:3vh 0 1.2vh;font-weight:800}
+.side h1 span{display:block;color:var(--magenta)}
+.side p{color:var(--muted);font-size:clamp(15px,1.25vw,20px);margin:0}
+.qr{margin:2.5vh 0 1.2vh;padding:14px;background:#fff;border:3px solid var(--ink);border-radius:16px;align-self:flex-start}
+.qr svg{display:block;width:min(20vw,30vh);height:auto}
+.url{font-weight:700;font-size:clamp(13px,1vw,16px);word-break:break-all}
+.now{margin-top:auto;border-top:1px solid var(--line);padding-top:2vh}
+.now .n{font-weight:800;color:var(--magenta);font-size:clamp(14px,1.1vw,18px)}
+.now .team{font-weight:800;font-size:clamp(20px,1.9vw,32px);line-height:1.1;margin:.4vh 0}
+.now .title{color:var(--muted);font-size:clamp(14px,1.05vw,18px)}
+.dots{display:flex;gap:6px;margin-top:1.6vh;flex-wrap:wrap}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--indigo)}
+.closes{font-size:clamp(13px,.95vw,16px);color:var(--muted);margin-top:1.2vh}
+@media (max-aspect-ratio:1/1){
+  .wrap{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+  .side{border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:0 24px;padding:2vh 4vw}
+  .side .logo,.side h1,.side p,.now{grid-column:2}
+  .qr{grid-row:1 / span 5;margin:0;align-self:center}
+  .qr svg{width:22vh}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage"><img id="img" alt=""></div>
+  <aside class="side">
+    <img class="logo" src="assets/servdes-logo.png" alt="ServDes India">
+    <h1>Vote for your two<span>favourite posters</span></h1>
+    <p>Scan with your phone camera and sign in with your registered email.</p>
+    <div class="qr" id="qr"></div>
+    <div class="url" id="url"></div>
+    <div class="closes" id="closes"></div>
+    <div class="now">
+      <div class="n" id="n"></div>
+      <div class="team" id="team"></div>
+      <div class="title" id="title"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </aside>
+</div>
+<script src="vendor/qrcode-generator.js"></script>
+<script src="config.js"></script>
+<script src="posters.js"></script>
+<script>
+(function(){
+  const P = window.POSTERS, SECONDS = Number(new URLSearchParams(location.search).get("s")) || 10;
+  const voteUrl = new URL("./", location.href).href;
+  document.getElementById("url").textContent = voteUrl.replace(/^https?:\/\//,"");
+  try{
+    const q = qrcode(0, "M"); q.addData(voteUrl); q.make();
+    document.getElementById("qr").innerHTML = q.createSvgTag({ cellSize: 8, margin: 0, scalable: true });
+  }catch(e){ console.error(e); }
+  const t = new Date(window.VOTE_CONFIG.CLOSE_AT).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",timeZone:"Asia/Kolkata"});
+  document.getElementById("closes").textContent = "Voting closes at " + t + ".";
+
+  const dots = document.getElementById("dots");
+  P.forEach(() => dots.appendChild(document.createElement("i")));
+  P.forEach(p => { const im = new Image(); im.src = `posters/${p.id}.jpg`; }); // preload
+
+  let i = 0, timer;
+  const img = document.getElementById("img");
+  function show(k){
+    i = (k + P.length) % P.length; const p = P[i];
+    img.classList.add("fade");
+    setTimeout(() => {
+      img.src = `posters/${p.id}.jpg`; img.alt = p.title;
+      img.onload = () => img.classList.remove("fade");
+    }, 400);
+    document.getElementById("n").textContent = "Poster " + p.id.replace("P","") + " of " + P.length;
+    document.getElementById("team").textContent = p.team;
+    document.getElementById("title").textContent = p.title;
+    [...dots.children].forEach((d,j) => d.classList.toggle("on", j === i));
+  }
+  function play(){ clearInterval(timer); timer = setInterval(() => show(i+1), SECONDS*1000); }
+  document.addEventListener("keydown", e => {
+    if(e.key === "ArrowRight"){ show(i+1); play(); }
+    if(e.key === "ArrowLeft"){ show(i-1); play(); }
+    if(e.key === "f"){ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+  });
+  show(0); play();
+})();
+</script>
+</body>
+</html>

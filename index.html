@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poster voting – ServDes India Symposium 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ---------- sign-in ---------- */
+.gate{min-height:100svh;display:flex;flex-direction:column;padding:28px 22px 32px;max-width:520px;margin:0 auto}
+.gate .logo{width:150px;margin-bottom:auto}
+.gate h1{font-size:clamp(34px,9vw,46px);line-height:1.04;letter-spacing:-.02em;margin:48px 0 14px;font-weight:800}
+.gate h1 span{display:block;color:var(--magenta)}
+.gate p.lede{color:var(--muted);font-size:17px;margin:0 0 26px;max-width:36ch}
+.gate .stickers-demo{display:flex;gap:10px;margin-bottom:28px}
+.gate .stickers-demo .sticker:first-child{transform:rotate(-8deg)}
+.gate .stickers-demo .sticker:last-child{transform:rotate(6deg)}
+.field label{display:block;font-weight:700;margin-bottom:8px}
+.field input{
+  width:100%;padding:15px 16px;border:2px solid var(--line);border-radius:14px;background:#fff;font-size:17px;
+}
+.field input:focus{border-color:var(--indigo);outline:none}
+.field .hint{font-size:14px;color:var(--muted);margin-top:8px}
+.gate .btn{width:100%;margin-top:18px}
+.msg{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:15px}
+.msg.err{background:#FDECEA;color:var(--err)}
+.msg.ok{background:#E7F5EE;color:var(--ok)}
+.gate .foot{margin-top:28px;font-size:13px;color:var(--muted)}
+
+/* ---------- gallery ---------- */
+.bar{
+  position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;
+  display:flex;align-items:center;gap:12px;
+}
+.bar .who{flex:1;min-width:0}
+.bar .who b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .who small{color:var(--muted);font-size:13px}
+.tray{display:flex;gap:6px}
+.tray .sticker{width:34px;height:34px;font-size:14px}
+.intro{padding:18px 16px 6px;max-width:1100px;margin:0 auto}
+.intro h2{margin:0 0 4px;font-size:22px;letter-spacing:-.01em}
+.intro p{margin:0;color:var(--muted)}
+.grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+  padding:14px 16px 130px;max-width:1100px;margin:0 auto;
+}
+@media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr);gap:20px}}
+@media (min-width:1000px){.grid{grid-template-columns:repeat(5,1fr)}}
+.card{position:relative;background:none;border:0;padding:0;text-align:left;display:flex;flex-direction:column}
+.thumb{
+  position:relative;border-radius:10px;overflow:hidden;background:var(--wash);
+  aspect-ratio:1684/2384;box-shadow:0 0 0 1px var(--line);
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.card.picked .thumb{box-shadow:0 0 0 3px var(--pick,var(--magenta))}
+.num{
+  position:absolute;left:8px;top:8px;background:rgba(33,27,62,.82);color:#fff;
+  font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;
+}
+.card .stuck{position:absolute;right:-6px;top:-8px;transform:rotate(9deg) scale(.6);opacity:0;transition:transform .25s cubic-bezier(.3,1.6,.5,1),opacity .15s}
+.card.picked .stuck{transform:rotate(9deg) scale(1);opacity:1}
+.meta{padding:8px 2px 0}
+.meta .team{font-weight:800;font-size:15px}
+.meta .title{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.place{
+  margin-top:8px;border:2px solid var(--line);background:#fff;border-radius:999px;
+  padding:9px 10px;font-weight:700;font-size:14px;min-height:42px;
+}
+.card.picked .place{background:var(--wash);border-color:transparent}
+
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:#fff;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;
+}
+.dock .status{flex:1;font-size:14px;color:var(--muted)}
+.dock .status b{color:var(--ink)}
+.dock .btn{flex:none}
+
+/* ---------- viewer ---------- */
+.viewer{position:fixed;inset:0;z-index:50;background:#16122C;display:flex;flex-direction:column}
+.viewer header,.viewer footer{display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff}
+.viewer header{padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
+.viewer header .t{flex:1;min-width:0}
+.viewer header .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.viewer header .t small{opacity:.7}
+.viewer .stage{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:flex}
+.viewer .stage img{margin:auto;max-height:100%;max-width:100%;object-fit:contain;transition:none}
+.viewer .stage.zoom img{max-height:none;max-width:none;width:240%}
+.viewer footer{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+.icon{background:rgba(255,255,255,.12);border:0;color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;flex:none}
+.viewer footer .btn{flex:1}
+.viewer .hintz{color:rgba(255,255,255,.65);font-size:12px;text-align:center;padding:0 0 4px}
+
+/* ---------- confirm & done ---------- */
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(22,18,44,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet .panel{background:#fff;width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.sheet h3{margin:0 0 14px;font-size:22px}
+.pick-row{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.pick-row img{width:48px;border-radius:6px;box-shadow:0 0 0 1px var(--line)}
+.pick-row > div:last-child{flex:1;min-width:0}
+.pick-row b{display:block}
+.pick-row small{color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.sheet .actions{display:flex;gap:10px;margin-top:16px}
+.sheet .actions .btn{flex:1}
+
+.done{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;max-width:520px;margin:0 auto;text-align:left}
+.done .board{display:flex;gap:14px;margin-bottom:26px}
+.done .board .p{position:relative;width:110px}
+.done .board .p img{border-radius:8px;box-shadow:0 0 0 1px var(--line)}
+.done .board .p .sticker{position:absolute;right:-10px;top:-10px;transform:rotate(9deg)}
+.done h1{font-size:36px;line-height:1.05;margin:0 0 12px;letter-spacing:-.02em}
+.done p{color:var(--muted);font-size:17px;margin:0 0 8px}
+</style>
+</head>
+<body>
+
+<!-- Sign-in -->
+<section class="gate" id="gate">
+  <img class="logo" src="assets/servdes-logo.png" alt="ServDes India">
+  <h1>Your two stickers.<span>Fifteen posters.</span></h1>
+  <p class="lede">Vote for the two student posters you like best at the ServDes India Symposium 2026.</p>
+  <div class="stickers-demo" aria-hidden="true"><div class="sticker s1">1</div><div class="sticker s2">2</div></div>
+  <form id="gateForm" novalidate>
+    <div class="field">
+      <label for="email">Your registered email</label>
+      <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="name@example.com" required>
+      <div class="hint">Use the email you registered with. One vote per delegate.</div>
+    </div>
+    <button class="btn" id="gateBtn" type="submit">Continue</button>
+    <div class="msg hidden" id="gateMsg" role="alert"></div>
+  </form>
+  <p class="foot" id="closeNote"></p>
+</section>
+
+<!-- Gallery -->
+<section id="gallery" class="hidden">
+  <div class="bar">
+    <div class="who"><b id="hello">Hi</b><small>Tap a poster to see it full size</small></div>
+    <div class="tray" id="tray" aria-label="Your stickers"></div>
+  </div>
+  <div class="intro">
+    <h2>Place your two stickers</h2>
+    <p>Pick the two posters you like best. You can move a sticker until you submit.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="dock">
+    <div class="status" id="dockStatus"></div>
+    <button class="btn magenta" id="reviewBtn" disabled>Submit votes</button>
+  </div>
+</section>
+
+<!-- Full-size viewer -->
+<div class="viewer hidden" id="viewer" role="dialog" aria-modal="true" aria-labelledby="vTeam">
+  <header>
+    <div class="t"><b id="vTeam"></b><small id="vNum"></small></div>
+    <button class="icon" id="vClose" aria-label="Close">✕</button>
+  </header>
+  <div class="stage" id="vStage"><img id="vImg" alt=""></div>
+  <div class="hintz">Double-tap to zoom</div>
+  <footer>
+    <button class="icon" id="vPrev" aria-label="Previous poster">‹</button>
+    <button class="btn" id="vPlace">Place sticker</button>
+    <button class="icon" id="vNext" aria-label="Next poster">›</button>
+  </footer>
+</div>
+
+<!-- Confirm -->
+<div class="sheet hidden" id="confirm" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="panel">
+    <h3 id="cTitle">Submit these two?</h3>
+    <div id="cList"></div>
+    <div class="msg hidden" id="cMsg" role="alert"></div>
+    <div class="actions">
+      <button class="btn secondary" id="cBack">Change</button>
+      <button class="btn magenta" id="cSend">Submit votes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Done -->
+<section class="done hidden" id="done">
+  <div class="board" id="doneBoard"></div>
+  <h1 id="doneTitle">Your votes are in.</h1>
+  <p id="doneText">Thank you for voting. Winners will be announced at the Awards and Recognition Ceremony at 4:00 PM in VKS 003.</p>
+  <p style="margin-top:22px"><button class="btn secondary" id="another">Vote with another email</button></p>
+</section>
+
+<script src="config.js"></script>
+<script src="posters.js"></script>
+<script>
+(function(){
+  const C = window.VOTE_CONFIG, P = window.POSTERS, N = C.VOTES_PER_PERSON;
+  const $ = id => document.getElementById(id);
+  const state = { email:"", name:"", picks:[], view:0 };
+  const byId = Object.fromEntries(P.map(p => [p.id, p]));
+
+  const closeAt = new Date(C.CLOSE_AT);
+  $("closeNote").textContent = "Voting closes at " + closeAt.toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",timeZone:"Asia/Kolkata"}) + " on 24 October.";
+
+  const ERRORS = {
+    missing_email: "Enter your registered email to continue.",
+    not_registered: "This email isn't on the delegate list. Check the spelling, or ask at the registration desk to be added.",
+    already_voted: "This email has already voted. Thank you for taking part.",
+    closed: "Voting closed at 2:30 PM. Results will be announced at 4:00 PM.",
+    bad_choices: "Pick exactly two different posters, then submit again.",
+    network: "Couldn't reach the voting server. Check your internet connection and try again."
+  };
+
+  async function api(body){
+    try{
+      const r = await fetch(C.API_URL, { method:"POST", body: JSON.stringify(body) });
+      return await r.json();
+    }catch(e){ return { ok:false, error:"network" }; }
+  }
+  function show(el, text, kind){ el.textContent = text; el.className = "msg " + kind; }
+
+  // already voted on this phone?
+  try{
+    const prev = JSON.parse(localStorage.getItem("servdes-voted") || "null");
+    if(prev && prev.picks) { state.name = prev.name; state.picks = prev.picks; finish(true); }
+  }catch(e){}
+
+  /* ---- sign-in ---- */
+  $("gateForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = $("email").value.trim().toLowerCase();
+    const msg = $("gateMsg");
+    if(!/^\S+@\S+\.\S+$/.test(email)){ show(msg, "Enter a valid email address, like name@example.com.", "err"); return; }
+    $("gateBtn").disabled = true; $("gateBtn").textContent = "Checking…"; msg.className = "msg hidden";
+    const res = await api({ action:"check", email });
+    $("gateBtn").disabled = false; $("gateBtn").textContent = "Continue";
+    if(!res.ok){ show(msg, ERRORS[res.error] || ERRORS.network, res.error === "already_voted" ? "ok" : "err"); return; }
+    state.email = email; state.name = res.name || "";
+    $("hello").textContent = state.name ? "Hi " + state.name.split(" ")[0] : "Hi there";
+    $("gate").classList.add("hidden"); $("gallery").classList.remove("hidden");
+    window.scrollTo(0,0);
+  });
+
+  /* ---- gallery ---- */
+  const grid = $("grid");
+  P.forEach((p, i) => {
+    const card = document.createElement("div");
+    card.className = "card"; card.dataset.id = p.id;
+    card.innerHTML = `
+      <button class="thumb" style="border:0;padding:0" aria-label="View ${p.team} poster full size">
+        <img loading="lazy" src="posters/${p.id}-thumb.jpg" alt="">
+        <span class="num">${p.id.replace("P","")}</span>
+      </button>
+      <div class="sticker s1 stuck" aria-hidden="true"></div>
+      <div class="meta"><div class="team">${p.team}</div><div class="title">${p.title}</div></div>
+      <button class="place">Place sticker</button>`;
+    card.querySelector(".thumb").addEventListener("click", () => openViewer(i));
+    card.querySelector(".place").addEventListener("click", () => toggle(p.id));
+    grid.appendChild(card);
+  });
+
+  function toggle(id){
+    const at = state.picks.indexOf(id);
+    if(at > -1) state.picks.splice(at,1);
+    else if(state.picks.length < N) state.picks.push(id);
+    else { nudgeTray(); return false; }
+    render(); return true;
+  }
+  function nudgeTray(){
+    $("dockStatus").innerHTML = "<b>Both stickers placed.</b> Remove one to move it.";
+    const t = $("tray"); t.animate([{transform:"translateX(0)"},{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"translateX(0)"}],{duration:260});
+  }
+  function render(){
+    document.querySelectorAll(".card").forEach(card => {
+      const k = state.picks.indexOf(card.dataset.id);
+      const st = card.querySelector(".stuck"), btn = card.querySelector(".place");
+      card.classList.toggle("picked", k > -1);
+      if(k > -1){
+        st.className = "sticker s" + (k+1) + " stuck"; st.textContent = k+1;
+        card.style.setProperty("--pick", k === 0 ? "var(--magenta)" : "var(--indigo)");
+        btn.textContent = "Remove sticker";
+      } else btn.textContent = "Place sticker";
+    });
+    const tray = $("tray"); tray.innerHTML = "";
+    for(let i=0;i<N;i++){
+      const used = i < state.picks.length;
+      const s = document.createElement("div");
+      s.className = "sticker " + (used ? "empty" : "s"+(i+1)); s.textContent = i+1;
+      tray.appendChild(s);
+    }
+    const left = N - state.picks.length;
+    $("dockStatus").innerHTML = left === 0 ? "<b>Both stickers placed.</b> Ready to submit." :
+      `<b>${left} sticker${left>1?"s":""} left</b> to place`;
+    $("reviewBtn").disabled = left !== 0;
+    if(!$("viewer").classList.contains("hidden")) syncViewerBtn();
+  }
+
+  /* ---- viewer ---- */
+  function openViewer(i){
+    state.view = i; paintViewer();
+    $("viewer").classList.remove("hidden"); document.body.style.overflow = "hidden";
+    $("vClose").focus();
+  }
+  function paintViewer(){
+    const p = P[state.view];
+    $("vStage").classList.remove("zoom"); $("vStage").scrollTo(0,0);
+    $("vImg").src = `posters/${p.id}.jpg`; $("vImg").alt = p.title;
+    $("vTeam").textContent = p.team; $("vNum").textContent = "Poster " + p.id.replace("P","") + " of " + P.length;
+    syncViewerBtn();
+  }
+  function syncViewerBtn(){
+    const id = P[state.view].id, k = state.picks.indexOf(id);
+    const b = $("vPlace");
+    if(k > -1){ b.textContent = "Remove sticker " + (k+1); b.className = "btn secondary"; b.disabled = false; }
+    else if(state.picks.length >= N){ b.textContent = "Both stickers placed"; b.className = "btn"; b.disabled = true; }
+    else { b.textContent = "Place sticker " + (state.picks.length+1); b.className = "btn " + (state.picks.length ? "" : "magenta"); b.disabled = false; }
+  }
+  function closeViewer(){ $("viewer").classList.add("hidden"); document.body.style.overflow = ""; }
+  $("vClose").onclick = closeViewer;
+  $("vPrev").onclick = () => { state.view = (state.view - 1 + P.length) % P.length; paintViewer(); };
+  $("vNext").onclick = () => { state.view = (state.view + 1) % P.length; paintViewer(); };
+  $("vPlace").onclick = () => toggle(P[state.view].id);
+  let lastTap = 0;
+  $("vStage").addEventListener("click", e => {
+    const now = Date.now();
+    if(now - lastTap < 320){
+      const st = $("vStage"), zoom = !st.classList.contains("zoom");
+      st.classList.toggle("zoom", zoom);
+      if(zoom){ const r = st.getBoundingClientRect(); const fx = (e.clientX - r.left)/r.width, fy = (e.clientY - r.top)/r.height;
+        requestAnimationFrame(() => st.scrollTo(fx*(st.scrollWidth - r.width), fy*(st.scrollHeight - r.height))); }
+    }
+    lastTap = now;
+  });
+  document.addEventListener("keydown", e => {
+    if($("viewer").classList.contains("hidden")) return;
+    if(e.key === "Escape") closeViewer();
+    if(e.key === "ArrowLeft") $("vPrev").click();
+    if(e.key === "ArrowRight") $("vNext").click();
+  });
+
+  /* ---- confirm & submit ---- */
+  $("reviewBtn").onclick = () => {
+    $("cList").innerHTML = state.picks.map((id,k) => `
+      <div class="pick-row"><div class="sticker s${k+1}">${k+1}</div>
+      <img src="posters/${id}-thumb.jpg" alt=""><div><b>${byId[id].team}</b><small>${byId[id].title}</small></div></div>`).join("");
+    $("cMsg").className = "msg hidden";
+    $("confirm").classList.remove("hidden"); $("cSend").focus();
+  };
+  $("cBack").onclick = () => $("confirm").classList.add("hidden");
+  $("cSend").onclick = async () => {
+    const b = $("cSend"); b.disabled = true; b.textContent = "Submitting…";
+    const res = await api({ action:"vote", email: state.email, choices: state.picks });
+    b.disabled = false; b.textContent = "Submit votes";
+    if(!res.ok){ show($("cMsg"), ERRORS[res.error] || ERRORS.network, "err"); return; }
+    try{ localStorage.setItem("servdes-voted", JSON.stringify({ name: state.name, picks: state.picks })); }catch(e){}
+    $("confirm").classList.add("hidden");
+    finish(false);
+  };
+
+  function finish(returning){
+    $("gate").classList.add("hidden"); $("gallery").classList.add("hidden");
+    $("doneBoard").innerHTML = state.picks.map((id,k) => byId[id] ? `
+      <div class="p"><img src="posters/${id}-thumb.jpg" alt="${byId[id].team}"><div class="sticker s${k+1}">${k+1}</div></div>` : "").join("");
+    if(state.name) $("doneTitle").textContent = "Thank you, " + state.name.split(" ")[0] + ". Your votes are in.";
+    if(returning) $("doneText").textContent = "You've already voted from this phone. Winners will be announced at the Awards and Recognition Ceremony at 4:00 PM in VKS 003.";
+    $("done").classList.remove("hidden"); window.scrollTo(0,0);
+  }
+
+  $("another").onclick = () => {
+    try{ localStorage.removeItem("servdes-voted"); }catch(e){}
+    state.email = ""; state.name = ""; state.picks = []; render();
+    $("email").value = ""; $("gateMsg").className = "msg hidden";
+    $("done").classList.add("hidden"); $("gate").classList.remove("hidden"); $("email").focus();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
